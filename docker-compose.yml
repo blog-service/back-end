@@ -1,15 +1,8 @@
-version: '3.8'
-
 services:
   mongo:
-    image: mongo:latest
+    image: mongo:7.0.12
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password1234
     ports:
-      - "${DB_PORT}:27017"
-    volumes:
-      - mongo_volume:/data/db
-
-volumes:
-  mongo_volume:
+      - 27017:27017

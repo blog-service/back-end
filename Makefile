@@ -58,4 +58,6 @@ watch:
 	    fi; \
 	fi
 
+build-image:
+	docker build -t blog-service .
 .PHONY: all build run test clean
