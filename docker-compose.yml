@@ -1,8 +1,12 @@
 services:
-  mongo:
-    image: mongo:7.0.12
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password1234
+  mongodb:
+    image: mongo:latest # use the latest image.
+    container_name: mongodb
+    restart: unless-stopped
+    environment: # set required env variables to access mongo
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - 27017:27017
+    volumes: # optional to preserve database after container is deleted.
+      - ./database-data:/data/db
