@@ -1,15 +1,45 @@
-version: '3.8'
+version: "3.5"
 
 services:
   mongo:
     image: mongo:latest
+    container_name: mongo
     environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${DB_USERNAME}:${DB_ROOT_PASSWORD}@mongo:27017/
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
-      - "${DB_PORT}:27017"
+      - "0.0.0.0:${DB_PORT}:27017"
+    networks:
+      - MONGO
     volumes:
-      - mongo_volume:/data/db
+      - type: volume
+        source: MONGO_DATA
+        target: /data/db
+      - type: volume
+        source: MONGO_CONFIG
+        target: /data/configdb
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: ${DB_PORT}
+    ports:
+      - "0.0.0.0:8081:8081"
+    networks:
+      - MONGO
+    depends_on:
+      - mongo
+
+networks:
+  MONGO:
+    name: MONGO
 
 volumes:
-  mongo_volume:
+  MONGO_DATA:
+    name: MONGO_DATA
+  MONGO_CONFIG:
+    name: MONGO_CONFIG
