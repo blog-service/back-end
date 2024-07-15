@@ -26,7 +26,5 @@ tmp/
 .env
 
 # Project build
-main
 *templ.go
 
-data/
