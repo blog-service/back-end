@@ -1,13 +1,15 @@
 package v1
 
 import (
-	userService "back-end/internal/businesses/v1/user"
+	v1 "back-end/internal/businesses/v1"
+	"back-end/internal/constants"
+	"back-end/internal/http/handlers/serializers"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type userHandler struct {
-	service userService.Service
+	service v1.UserService
 }
 
 type UserHandler interface {
@@ -15,15 +17,24 @@ type UserHandler interface {
 	GetUserByUsername(c *gin.Context)
 }
 
-func New() UserHandler {
+func NewUserHandler() UserHandler {
 	return &userHandler{
-		service: userService.New(),
+		service: v1.NewUserService(),
 	}
 }
 
-func (h *userHandler) GetUserByID(c *gin.Context) {
-	NewSuccessResponse(c, http.StatusOK, nil)
-	return
+func (h *userHandler) GetUserByID(ctx *gin.Context) {
+	var req serializers.UserGetUserByIDRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, constants.ErrInvalidRequest.Error())
+		return
+	}
+	userInfo, err := h.service.GetInfoUserById(ctx, req.Id)
+	if err != nil {
+		NewErrorResponse(ctx, http.StatusInternalServerError, constants.ErrCodeUnknown, constants.ErrUnknown.Error())
+		return
+	}
+	NewSuccessResponse(ctx, http.StatusOK, userInfo)
 }
 
 func (h *userHandler) GetUserByUsername(c *gin.Context) {

@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-type Users struct {
-	Id        primitive.ObjectID  `bson:"id"`
+type User struct {
+	Id        primitive.ObjectID  `bson:"_id,omitempty"`
 	Username  string              `bson:"username"`
 	Email     string              `bson:"email"`
 	FirstName string              `bson:"first_name"`

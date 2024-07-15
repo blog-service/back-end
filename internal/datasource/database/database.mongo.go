@@ -1,17 +1,25 @@
 package database
 
 import (
+	"back-end/internal/config"
+	"back-end/internal/constants"
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectToDB(dbUri, databaseName string) (*mongo.Database, error) {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(dbUri))
+var mongoClient *mongo.Client
 
+func ConnectToDB() error {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(config.Cfg.MongodbUrl))
 	if err != nil {
-		return nil, err
+		return err
 	}
+	mongoClient = client
 
-	return client.Database(databaseName), nil
+	return nil
+}
+
+func GetUserCollection() *mongo.Collection {
+	return mongoClient.Database(config.Cfg.DatabaseName).Collection(constants.UserCollection)
 }
