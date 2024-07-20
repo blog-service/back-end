@@ -8,10 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var cfg = config.GetConfig()
+
 var mongoClient *mongo.Client
 
 func ConnectToDB() error {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(config.Cfg.MongodbUrl))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(cfg.MongodbUrl))
 	if err != nil {
 		return err
 	}
@@ -21,5 +23,5 @@ func ConnectToDB() error {
 }
 
 func GetUserCollection() *mongo.Collection {
-	return mongoClient.Database(config.Cfg.DatabaseName).Collection(constants.UserCollection)
+	return mongoClient.Database(cfg.DatabaseName).Collection(constants.UserCollection)
 }

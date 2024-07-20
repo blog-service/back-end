@@ -1,37 +1,45 @@
 package v1
 
 import (
-	v1 "back-end/internal/businesses/v1"
+	bussiness "back-end/internal/businesses/v1"
 	"back-end/internal/constants"
-	"back-end/internal/http/handlers/serializers"
+	"back-end/internal/http/datatransfers/requests"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type userHandler struct {
-	service v1.UserService
+	service bussiness.UserService
 }
 
 type UserHandler interface {
-	GetUserByID(c *gin.Context)
+	GetUserById(c *gin.Context)
 	GetUserByUsername(c *gin.Context)
 }
 
 func NewUserHandler() UserHandler {
 	return &userHandler{
-		service: v1.NewUserService(),
+		service: bussiness.NewUserService(),
 	}
 }
 
-func (h *userHandler) GetUserByID(ctx *gin.Context) {
-	var req serializers.UserGetUserByIDRequest
+func (h *userHandler) SignUp(ctx *gin.Context) {
+	var req requests.UserSignUpRequest
+	if err := ctx.ShouldBindBodyWithJSON(&req); err != nil {
+		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, constants.ErrInvalidRequest)
+		return
+	}
+}
+
+func (h *userHandler) GetUserById(ctx *gin.Context) {
+	var req requests.UserGetUserByIdRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, constants.ErrInvalidRequest.Error())
+		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, constants.ErrInvalidRequest)
 		return
 	}
 	userInfo, err := h.service.GetInfoUserById(ctx, req.Id)
 	if err != nil {
-		NewErrorResponse(ctx, http.StatusInternalServerError, constants.ErrCodeUnknown, constants.ErrUnknown.Error())
+		NewErrorResponse(ctx, http.StatusInternalServerError, constants.ErrCodeUnknown, constants.ErrUnknown)
 		return
 	}
 	NewSuccessResponse(ctx, http.StatusOK, userInfo)
@@ -39,5 +47,4 @@ func (h *userHandler) GetUserByID(ctx *gin.Context) {
 
 func (h *userHandler) GetUserByUsername(c *gin.Context) {
 	NewErrorResponse(c, http.StatusBadRequest, 1000, "username is required")
-	return
 }
