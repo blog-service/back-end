@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type keyRepo struct {
@@ -15,7 +16,7 @@ type keyRepo struct {
 }
 
 type KeyRepo interface {
-	FindOneByID(id primitive.ObjectID) (user *models.User, err error)
+	FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, err error)
 }
 
 func NewKey(ctx context.Context) KeyRepo {
@@ -25,9 +26,15 @@ func NewKey(ctx context.Context) KeyRepo {
 	}
 }
 
-func (s *keyRepo) FindOneByID(id primitive.ObjectID) (user *models.User, err error) {
-	if err = s.coll.FindOne(s.ctx, bson.M{"_id": id}).Decode(&user); err != nil {
-		consoleLog.Error().Err(err).Str("func", "FindOne.Decode").Msg("userRepo")
+func (s *keyRepo) FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, err error) {
+	opt := NewOptions()
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+	findOneOptions := options.FindOne()
+	findOneOptions.SetProjection(opt.QueryOnlyField())
+	if err = s.coll.FindOne(s.ctx, bson.M{"_id": id}, findOneOptions).Decode(&user); err != nil {
+		consoleLog.Error().Err(err).Str("func", "FindOneByID-FindOne.Decode").Msg("keyRepo")
 		return nil, err
 	}
 	return user, nil

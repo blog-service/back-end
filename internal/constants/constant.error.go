@@ -10,8 +10,9 @@ var (
 )
 
 const (
-	ErrCodeUnknown        = 1000
-	ErrCodeMissingToken   = 1001
-	ErrCodeWrongToken     = 1002
-	ErrCodeInvalidRequest = 1003
+	ErrCodeUnknown            = 1000
+	ErrCodeMissingToken       = 1001
+	ErrCodeWrongToken         = 1002
+	ErrCodeParseRequestFailed = 1003
+	ErrCodeInvalidRequest     = 1004
 )
