@@ -10,6 +10,7 @@ var (
 )
 
 const (
+	ErrCodeNoErr              = 0
 	ErrCodeUnknown            = 1000
 	ErrCodeMissingToken       = 1001
 	ErrCodeWrongToken         = 1002

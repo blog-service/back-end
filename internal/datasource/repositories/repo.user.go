@@ -1,9 +1,11 @@
 package repositories
 
 import (
+	"context"
+
+	"back-end/internal/constants"
 	"back-end/internal/datasource/database"
 	"back-end/internal/datasource/models"
-	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,8 +18,8 @@ type userRepo struct {
 }
 
 type UserRepo interface {
-	FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, err error)
-	InsertOne(user *models.User) (newUser *models.User, err error)
+	FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, errCode int, err error)
+	InsertOne(user *models.User) (newUser *models.User, errCode int, err error)
 }
 
 func NewUser(ctx context.Context) UserRepo {
@@ -27,7 +29,7 @@ func NewUser(ctx context.Context) UserRepo {
 	}
 }
 
-func (s *userRepo) FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, err error) {
+func (s *userRepo) FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, errCode int, err error) {
 	opt := NewOptions()
 	if len(opts) > 0 {
 		opt = opts[0]
@@ -36,17 +38,17 @@ func (s *userRepo) FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (use
 	findOneOptions.SetProjection(opt.QueryOnlyField())
 	if err = s.coll.FindOne(s.ctx, bson.M{"_id": id}, findOneOptions).Decode(&user); err != nil {
 		consoleLog.Error().Err(err).Str("func", "FindOneByID-FindOne.Decode").Msg("userRepo")
-		return nil, err
+		return nil, constants.ErrCodeUnknown, err
 	}
-	return user, nil
+	return user, constants.ErrCodeNoErr, nil
 }
 
-func (s *userRepo) InsertOne(user *models.User) (newUser *models.User, err error) {
+func (s *userRepo) InsertOne(user *models.User) (newUser *models.User, errCode int, err error) {
 	result, err := s.coll.InsertOne(s.ctx, user)
 	if err != nil {
 		consoleLog.Error().Err(err).Str("func", "InsertOne-InsertOne").Msg("userRepo")
-		return nil, err
+		return nil, constants.ErrCodeUnknown, err
 	}
 	user.Id = result.InsertedID.(primitive.ObjectID)
-	return user, nil
+	return user, constants.ErrCodeNoErr, nil
 }

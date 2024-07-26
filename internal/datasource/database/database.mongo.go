@@ -1,9 +1,10 @@
 package database
 
 import (
+	"context"
+
 	"back-end/internal/config"
 	"back-end/internal/constants"
-	"context"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

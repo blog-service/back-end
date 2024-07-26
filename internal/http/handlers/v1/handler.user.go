@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"net/http"
+	"time"
+
 	bussiness "back-end/internal/businesses/v1"
 	"back-end/internal/constants"
 	"back-end/internal/datasource/models"
 	"back-end/internal/http/datatransfers/requests"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"time"
 )
 
 type userHandler struct {
@@ -17,6 +18,7 @@ type userHandler struct {
 type UserHandler interface {
 	GetUserById(c *gin.Context)
 	GetUserByUsername(c *gin.Context)
+	SignUp(ctx *gin.Context)
 }
 
 func NewUserHandler() UserHandler {
@@ -48,8 +50,8 @@ func (h *userHandler) SignUp(ctx *gin.Context) {
 		CreatedAt: currentTime,
 		UpdatedAt: currentTime,
 	}
-	if err := h.service.Create(ctx, &newUser); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, err.Error())
+	if errCode, err := h.service.Create(ctx, &newUser); err != nil {
+		NewErrorResponse(ctx, http.StatusBadRequest, errCode, err.Error())
 		return
 	}
 }
@@ -60,9 +62,9 @@ func (h *userHandler) GetUserById(ctx *gin.Context) {
 		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeParseRequestFailed, constants.ErrInvalidRequest)
 		return
 	}
-	userInfo, err := h.service.GetInfoById(ctx, req.Id)
+	userInfo, errCode, err := h.service.GetInfoById(ctx, req.Id)
 	if err != nil {
-		NewErrorResponse(ctx, http.StatusInternalServerError, constants.ErrCodeUnknown, constants.ErrUnknown)
+		NewErrorResponse(ctx, http.StatusInternalServerError, errCode, constants.ErrUnknown)
 		return
 	}
 	NewSuccessResponse(ctx, http.StatusOK, userInfo)
