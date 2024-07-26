@@ -5,6 +5,8 @@ import (
 
 	"back-end/internal/config"
 	"back-end/internal/constants"
+	"back-end/pkg/logger"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -20,9 +22,46 @@ func ConnectToDB() error {
 	}
 	mongoClient = client
 
+	{
+		userIndex()
+	}
+
 	return nil
 }
 
 func GetUserCollection() *mongo.Collection {
 	return mongoClient.Database(cfg.DatabaseName).Collection(constants.UserCollection)
+}
+
+func userIndex() {
+	collIndex := mongoClient.Database(cfg.DatabaseName).Collection(constants.UserCollection).Indexes()
+	ctxDrop, cancelDrop := context.WithTimeout(context.Background(), cfg.MongodbTimeout)
+	defer cancelDrop()
+	_, _ = collIndex.DropAll(ctxDrop)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.MongodbTimeout)
+	defer cancel()
+	if _, err := collIndex.CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "username", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys:    bson.D{{Key: "email", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys:    bson.D{{Key: "phone", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys:    bson.D{{Key: "username", Value: 1}, {Key: "role", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		{
+			Keys:    bson.D{{Key: "username", Value: 1}, {Key: "status", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	}); err != nil {
+		logger.ConsoleLog().Fatal().Err(err).Msg("userIndex")
+	}
 }
