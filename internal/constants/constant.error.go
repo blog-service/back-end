@@ -16,4 +16,7 @@ const (
 	ErrCodeWrongToken         = 1002
 	ErrCodeParseRequestFailed = 1003
 	ErrCodeInvalidRequest     = 1004
+
+	ErrCodeHashPassFailed = 1005
+	ErrCodeDuplicateData  = 1006
 )

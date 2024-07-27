@@ -1,8 +1,9 @@
 package models
 
 import (
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
@@ -19,6 +20,4 @@ type User struct {
 	CreatedBy *primitive.ObjectID `bson:"created_by"`
 	UpdatedAt time.Time           `bson:"updated_at"`
 	UpdatedBy *primitive.ObjectID `bson:"updated_by"`
-	DeletedAt *time.Time          `bson:"deleted_at"`
-	DeletedBy *primitive.ObjectID `bson:"deleted_by"`
 }

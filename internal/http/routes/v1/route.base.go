@@ -19,5 +19,6 @@ func NewRouter(engine *gin.Engine) Router {
 }
 
 func (r *router) V1() {
-	r.userRoutes()
+	v1 := r.engine.Group("/api/blog-service/v1/")
+	userRoutes(v1)
 }

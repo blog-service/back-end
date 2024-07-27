@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+
+	"back-end/internal/config"
 	"back-end/internal/datasource/database"
 	routes "back-end/internal/http/routes/v1"
 	"back-end/pkg/logger"
@@ -18,7 +21,7 @@ func main() {
 
 	routes.NewRouter(r).V1()
 
-	if err := r.Run(); err != nil {
+	if err := r.Run(fmt.Sprintf(":%d", config.GetConfig().Port)); err != nil {
 		logger.ConsoleLog().Error().Str("func", "main-r.Run").Err(err).Msg("Run err")
 	}
 }

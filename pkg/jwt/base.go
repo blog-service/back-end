@@ -1,11 +1,12 @@
 package jwt
 
 import (
-	"back-end/pkg/logger"
 	"crypto/rsa"
-	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
+
+	"back-end/pkg/logger"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var (

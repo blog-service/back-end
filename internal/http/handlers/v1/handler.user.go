@@ -2,11 +2,9 @@ package v1
 
 import (
 	"net/http"
-	"time"
 
 	bussiness "back-end/internal/businesses/v1"
 	"back-end/internal/constants"
-	"back-end/internal/datasource/models"
 	"back-end/internal/http/datatransfers/requests"
 	"github.com/gin-gonic/gin"
 )
@@ -37,23 +35,11 @@ func (h *userHandler) SignUp(ctx *gin.Context) {
 		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, err.Error())
 		return
 	}
-	currentTime := time.Now()
-	newUser := models.User{
-		Username:  req.Username,
-		Email:     req.Email,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Password:  req.Password,
-		Phone:     req.Phone,
-		Status:    constants.UserStatusRegistered,
-		RoleId:    constants.UserRoleReader,
-		CreatedAt: currentTime,
-		UpdatedAt: currentTime,
-	}
-	if errCode, err := h.service.Create(ctx, &newUser); err != nil {
+	if errCode, err := h.service.Create(ctx, &req); err != nil {
 		NewErrorResponse(ctx, http.StatusBadRequest, errCode, err.Error())
 		return
 	}
+	NewSuccessResponse(ctx, http.StatusCreated, nil)
 }
 
 func (h *userHandler) GetUserById(ctx *gin.Context) {

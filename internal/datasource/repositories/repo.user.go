@@ -19,7 +19,7 @@ type userRepo struct {
 
 type UserRepo interface {
 	FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (user *models.User, errCode int, err error)
-	InsertOne(user *models.User) (newUser *models.User, errCode int, err error)
+	InsertOne(user models.User) (newUser *models.User, errCode int, err error)
 }
 
 func NewUser(ctx context.Context) UserRepo {
@@ -43,12 +43,12 @@ func (s *userRepo) FindOneByID(id primitive.ObjectID, opts ...OptionsQuery) (use
 	return user, constants.ErrCodeNoErr, nil
 }
 
-func (s *userRepo) InsertOne(user *models.User) (newUser *models.User, errCode int, err error) {
+func (s *userRepo) InsertOne(user models.User) (newUser *models.User, errCode int, err error) {
 	result, err := s.coll.InsertOne(s.ctx, user)
 	if err != nil {
 		consoleLog.Error().Err(err).Str("func", "InsertOne-InsertOne").Msg("userRepo")
 		return nil, constants.ErrCodeUnknown, err
 	}
 	user.Id = result.InsertedID.(primitive.ObjectID)
-	return user, constants.ErrCodeNoErr, nil
+	return &user, constants.ErrCodeNoErr, nil
 }
