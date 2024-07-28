@@ -14,7 +14,7 @@ func main() {
 	if err := database.ConnectToDB(); err != nil {
 		logger.ConsoleLog().Fatal().Err(err)
 	}
-
+	gin.ForceConsoleColor()
 	r := gin.Default()
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())

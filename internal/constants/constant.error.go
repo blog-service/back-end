@@ -1,8 +1,6 @@
 package constants
 
 var (
-	ErrLoadConfig     = "failed to load config file"
-	ErrParseConfig    = "failed to parse env to config struct"
 	ErrUnknown        = "unknown error"
 	ErrMissingToken   = "missing token"
 	ErrWrongToken     = "wrong token"

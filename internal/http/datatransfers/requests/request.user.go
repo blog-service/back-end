@@ -31,3 +31,15 @@ func (r *UserSignUpRequest) Validate() error {
 	}
 	return nil
 }
+
+type UserSignInRequest struct {
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+func (r *UserSignInRequest) Validate() error {
+	if err := validator.New().ValidatePayloads(r); err != nil {
+		return err
+	}
+	return nil
+}

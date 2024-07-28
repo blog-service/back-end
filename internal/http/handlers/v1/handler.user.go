@@ -6,6 +6,7 @@ import (
 	bussiness "back-end/internal/businesses/v1"
 	"back-end/internal/constants"
 	"back-end/internal/http/datatransfers/requests"
+	"back-end/internal/http/datatransfers/responses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,6 @@ type userHandler struct {
 
 type UserHandler interface {
 	GetUserById(c *gin.Context)
-	GetUserByUsername(c *gin.Context)
 	SignUp(ctx *gin.Context)
 }
 
@@ -28,34 +28,78 @@ func NewUserHandler() UserHandler {
 func (h *userHandler) SignUp(ctx *gin.Context) {
 	var req requests.UserSignUpRequest
 	if err := ctx.ShouldBindBodyWithJSON(&req); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeParseRequestFailed, constants.ErrInvalidRequest)
+		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
+			ErrorCode: constants.ErrCodeParseRequestFailed,
+			Message:   constants.ErrInvalidRequest,
+		})
 		return
 	}
 	if err := req.Validate(); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeInvalidRequest, err.Error())
+		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
+			ErrorCode: constants.ErrCodeInvalidRequest,
+			Message:   err.Error(),
+		})
 		return
 	}
 	if errCode, err := h.service.Create(ctx, &req); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, errCode, err.Error())
+		if errCode == constants.ErrCodeDuplicateData {
+			NewErrorResponse(ctx, http.StatusConflict, &responses.ErrorResponse{
+				ErrorCode: errCode,
+				Message:   err.Error(),
+			})
+			return
+		}
+		NewErrorResponse(ctx, http.StatusInternalServerError, &responses.ErrorResponse{
+			ErrorCode: errCode,
+			Message:   err.Error(),
+		})
 		return
 	}
 	NewSuccessResponse(ctx, http.StatusCreated, nil)
 }
 
+func (h *userHandler) SignIn(ctx *gin.Context) {
+	var req requests.UserSignInRequest
+	if err := ctx.ShouldBindBodyWithJSON(&req); err != nil {
+		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
+			ErrorCode: constants.ErrCodeParseRequestFailed,
+			Message:   constants.ErrInvalidRequest,
+		})
+		return
+	}
+	if err := req.Validate(); err != nil {
+		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
+			ErrorCode: constants.ErrCodeInvalidRequest,
+			Message:   err.Error(),
+		})
+		return
+	}
+
+	NewSuccessResponse(ctx, http.StatusOK, &responses.SuccessResponse{
+		Data: responses.UserSignInResponse{
+			Token: "",
+		},
+	})
+}
+
 func (h *userHandler) GetUserById(ctx *gin.Context) {
 	var req requests.UserGetUserByIdRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, constants.ErrCodeParseRequestFailed, constants.ErrInvalidRequest)
+		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
+			ErrorCode: constants.ErrCodeParseRequestFailed,
+			Message:   constants.ErrInvalidRequest,
+		})
 		return
 	}
 	userInfo, errCode, err := h.service.GetInfoById(ctx, req.Id)
 	if err != nil {
-		NewErrorResponse(ctx, http.StatusInternalServerError, errCode, constants.ErrUnknown)
+		NewErrorResponse(ctx, http.StatusInternalServerError, &responses.ErrorResponse{
+			ErrorCode: errCode,
+			Message:   err.Error(),
+		})
 		return
 	}
-	NewSuccessResponse(ctx, http.StatusOK, userInfo)
-}
-
-func (h *userHandler) GetUserByUsername(c *gin.Context) {
-	NewErrorResponse(c, http.StatusBadRequest, 1000, "username is required")
+	NewSuccessResponse(ctx, http.StatusOK, &responses.SuccessResponse{
+		Data: userInfo,
+	})
 }
