@@ -33,13 +33,17 @@ func (r *UserSignUpRequest) Validate() error {
 }
 
 type UserSignInRequest struct {
-	Username string `json:"username" validate:"required"`
+	Username string `json:"username" validate:"required,alphanum"`
 	Password string `json:"password" validate:"required"`
 }
 
 func (r *UserSignInRequest) Validate() error {
 	if err := validator.New().ValidatePayloads(r); err != nil {
 		return err
+	}
+	re := regexp.MustCompile(`^[A-Za-z\d@$!%*#?&]{6,}$`)
+	if !re.MatchString(r.Password) {
+		return errors.New("password must contain at least six characters, at least one letter, one number and one special character")
 	}
 	return nil
 }

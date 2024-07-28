@@ -22,15 +22,18 @@ func ConnectToDB() error {
 	}
 	mongoClient = client
 
-	{
-		userIndex()
-	}
+	userIndex()
+	keyIndex()
 
 	return nil
 }
 
 func GetUserCollection() *mongo.Collection {
 	return mongoClient.Database(cfg.DatabaseName).Collection(constants.UserCollection)
+}
+
+func GetKeyCollection() *mongo.Collection {
+	return mongoClient.Database(cfg.DatabaseName).Collection(constants.KeyCollection)
 }
 
 func userIndex() {
@@ -63,5 +66,22 @@ func userIndex() {
 		},
 	}); err != nil {
 		logger.ConsoleLog().Fatal().Err(err).Msg("userIndex")
+	}
+}
+
+func keyIndex() {
+	collIndex := mongoClient.Database(cfg.DatabaseName).Collection(constants.KeyCollection).Indexes()
+	ctxDrop, cancelDrop := context.WithTimeout(context.Background(), cfg.MongodbTimeout)
+	defer cancelDrop()
+	_, _ = collIndex.DropAll(ctxDrop)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.MongodbTimeout)
+	defer cancel()
+	if _, err := collIndex.CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys:    bson.D{{Key: "user_id", Value: 1}, {Key: "token_id", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+	}); err != nil {
+		logger.ConsoleLog().Fatal().Err(err).Msg("keyIndex")
 	}
 }

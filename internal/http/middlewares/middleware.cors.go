@@ -1,11 +1,12 @@
 package middlewares
 
 import (
+	"net/http"
+	"strings"
+
 	"back-end/internal/constants"
 	stringUtils "back-end/pkg/utils/string-utils"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strings"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -26,11 +27,6 @@ func CORSMiddleware() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden with CORS policy"})
 				return
 			}
-		}
-
-		if !stringUtils.New().IsArrayContains(strings.Split(constants.AllowOrigin, ", "), c.Request.Host) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden with CORS policy"})
-			return
 		}
 
 		c.Next()

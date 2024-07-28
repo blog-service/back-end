@@ -11,12 +11,14 @@ import (
 var consoleLog = logger.ConsoleLog()
 
 type Configuration struct {
-	Port           int           `env:"PORT" envDefault:"8080"`
-	MongodbUrl     string        `env:"MONGODB_URL" envDefault:"mongodb://localhost:27017/"`
-	DatabaseName   string        `env:"DATABASE_NAME" envDefault:"localdb"`
-	PrivateKeyPath string        `env:"PRIVATE_KEY_PATH" envDefault:"certs/privateKey.pem"`
-	PublicKeyPath  string        `env:"PUBLIC_KEY_PATH" envDefault:"certs/publicKey.pem"`
-	MongodbTimeout time.Duration `env:"MONGODB_TIMEOUT" envDefault:"30s"`
+	Port                int           `env:"PORT" envDefault:"8080"`
+	MongodbUrl          string        `env:"MONGODB_URL" envDefault:"mongodb://localhost:27017/"`
+	DatabaseName        string        `env:"DATABASE_NAME" envDefault:"localdb"`
+	PrivateKeyPath      string        `env:"PRIVATE_KEY_PATH" envDefault:"certs/privateKey.pem"`
+	PublicKeyPath       string        `env:"PUBLIC_KEY_PATH" envDefault:"certs/publicKey.pem"`
+	MongodbTimeout      time.Duration `env:"MONGODB_TIMEOUT" envDefault:"30s"`
+	AccessTokenExpired  time.Duration `env:"ACCESS_TOKEN_EXPIRED" envDefault:"10m"`
+	RefreshTokenExpired time.Duration `env:"REFRESH_TOKEN_EXPIRED" envDefault:"6h"`
 }
 
 var config *Configuration

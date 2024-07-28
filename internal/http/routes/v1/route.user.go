@@ -13,4 +13,5 @@ func userRoutes(g *gin.RouterGroup) {
 func authRoutes(g *gin.RouterGroup) {
 	userHandler := handler.NewUserHandler()
 	g.POST("/sign-up", userHandler.SignUp)
+	g.POST("/sign-in", userHandler.SignIn)
 }

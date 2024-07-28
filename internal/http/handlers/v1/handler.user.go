@@ -17,6 +17,7 @@ type userHandler struct {
 type UserHandler interface {
 	GetUserById(c *gin.Context)
 	SignUp(ctx *gin.Context)
+	SignIn(ctx *gin.Context)
 }
 
 func NewUserHandler() UserHandler {
@@ -75,9 +76,34 @@ func (h *userHandler) SignIn(ctx *gin.Context) {
 		return
 	}
 
+	userId, errCode, err := h.service.CheckUser(ctx, &req)
+	if err != nil {
+		if errCode == constants.ErrCodeUserNotFound || errCode == constants.ErrCodeUserInvalidPassword {
+			NewErrorResponse(ctx, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: errCode,
+				Message:   err.Error(),
+			})
+			return
+		}
+		NewErrorResponse(ctx, http.StatusInternalServerError, &responses.ErrorResponse{
+			ErrorCode: errCode,
+			Message:   err.Error(),
+		})
+		return
+	}
+
+	accessToken, errCode, err := h.service.RegisToken(ctx, userId)
+	if err != nil {
+		NewErrorResponse(ctx, http.StatusInternalServerError, &responses.ErrorResponse{
+			ErrorCode: errCode,
+			Message:   err.Error(),
+		})
+		return
+	}
+
 	NewSuccessResponse(ctx, http.StatusOK, &responses.SuccessResponse{
 		Data: responses.UserSignInResponse{
-			Token: "",
+			Token: accessToken,
 		},
 	})
 }

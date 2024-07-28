@@ -17,4 +17,9 @@ const (
 
 	ErrCodeHashPassFailed = 1005
 	ErrCodeDuplicateData  = 1006
+
+	ErrCodeUserNotFound            = 1007
+	ErrCodeUserInvalidPassword     = 1008
+	ErrCodeUserKeyNotFound         = 1009
+	ErrCodeUserGenerateTokenFailed = 1010
 )

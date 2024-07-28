@@ -5,6 +5,7 @@ import (
 
 	"back-end/internal/config"
 	"back-end/internal/datasource/database"
+	"back-end/internal/http/middlewares"
 	routes "back-end/internal/http/routes/v1"
 	"back-end/pkg/logger"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ func main() {
 	}
 	gin.ForceConsoleColor()
 	r := gin.Default()
+	r.Use(middlewares.CORSMiddleware())
 	r.Use(gin.Recovery())
 	r.Use(gin.Logger())
 
