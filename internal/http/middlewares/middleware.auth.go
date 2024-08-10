@@ -14,7 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func AuthMiddleware() gin.HandlerFunc {
+func ValidateAccess() gin.HandlerFunc {
 	jwtService := jwt.NewJwtService(config.GetConfig().PrivateKeyPath, config.GetConfig().PublicKeyPath)
 
 	return func(c *gin.Context) {
@@ -44,6 +44,36 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 		if !claims.Data.IsAccess {
+			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: constants.ErrCodeWrongToken,
+				Message:   constants.ErrWrongToken,
+			})
+			return
+		}
+		localService := local.New(c)
+		userId, err := primitive.ObjectIDFromHex(claims.Issuer)
+		if err != nil {
+			return
+		}
+		localService.SetUserId(userId)
+		c.Next()
+	}
+}
+
+func ValidateRefresh() gin.HandlerFunc {
+	jwtService := jwt.NewJwtService(config.GetConfig().PrivateKeyPath, config.GetConfig().PublicKeyPath)
+
+	return func(c *gin.Context) {
+		refreshToken, err := c.Cookie("refresh_token")
+		claims, err := jwtService.ValidateToken(refreshToken)
+		if err != nil {
+			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: constants.ErrCodeWrongToken,
+				Message:   constants.ErrWrongToken,
+			})
+			return
+		}
+		if claims.Data.IsAccess {
 			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
 				ErrorCode: constants.ErrCodeWrongToken,
 				Message:   constants.ErrWrongToken,
