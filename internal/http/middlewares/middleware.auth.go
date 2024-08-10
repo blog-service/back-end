@@ -65,6 +65,13 @@ func ValidateRefresh() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		refreshToken, err := c.Cookie("refresh_token")
+		if err != nil {
+			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: constants.ErrCodeMissingToken,
+				Message:   constants.ErrMissingToken,
+			})
+			return
+		}
 		claims, err := jwtService.ValidateToken(refreshToken)
 		if err != nil {
 			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
