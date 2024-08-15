@@ -12,7 +12,6 @@ import (
 	"back-end/pkg/jwt"
 	"back-end/pkg/utils/local"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func ValidateAccess() gin.HandlerFunc {
@@ -63,9 +62,6 @@ func ValidateAccess() gin.HandlerFunc {
 			return
 		}
 
-		if err != nil {
-			return
-		}
 		local.New(c).SetUserId(key.UserId)
 		c.Next()
 	}
@@ -98,12 +94,19 @@ func ValidateRefresh() gin.HandlerFunc {
 			})
 			return
 		}
-		localService := local.New(c)
-		userId, err := primitive.ObjectIDFromHex(claims.Issuer)
+
+		optionQuery := repositories.NewOptions()
+		optionQuery.SetOnlyFields("user_id")
+		key, _, err := repositories.NewKey(c).FindOneByTokenId(claims.ID, optionQuery)
 		if err != nil {
+			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: constants.ErrCodeWrongToken,
+				Message:   constants.ErrWrongToken,
+			})
 			return
 		}
-		localService.SetUserId(userId)
+
+		local.New(c).SetUserId(key.UserId)
 		c.Next()
 	}
 }
