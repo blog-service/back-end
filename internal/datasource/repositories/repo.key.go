@@ -24,6 +24,7 @@ type KeyRepo interface {
 	InsertOne(key models.Key) (newKey *models.Key, errCode int, err error)
 	DeleteOneByUserId(userId primitive.ObjectID) (errCode int, err error)
 	DeleteOneById(id primitive.ObjectID) (errCode int, err error)
+	FindOneByTokenId(tokenId string, opts ...OptionsQuery) (key *models.Key, errCode int, err error)
 }
 
 func NewKey(ctx context.Context) KeyRepo {
@@ -91,4 +92,21 @@ func (s *keyRepo) DeleteOneById(id primitive.ObjectID) (errCode int, err error) 
 		return constants.ErrCodeUnknown, err
 	}
 	return constants.ErrCodeNoErr, nil
+}
+
+func (s *keyRepo) FindOneByTokenId(tokenId string, opts ...OptionsQuery) (key *models.Key, errCode int, err error) {
+	opt := NewOptions()
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
+	findOneOptions := options.FindOne()
+	findOneOptions.SetProjection(opt.QueryOnlyField())
+	if err = s.coll.FindOne(s.ctx, bson.M{"token_id": tokenId}, findOneOptions).Decode(&key); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, constants.ErrCodeUserKeyNotFound, err
+		}
+		consoleLog.Error().Err(err).Str("func", "FindOneByTokenId-FindOne.Decode").Msg("keyRepo")
+		return nil, constants.ErrCodeUnknown, err
+	}
+	return key, constants.ErrCodeNoErr, nil
 }

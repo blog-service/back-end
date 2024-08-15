@@ -15,7 +15,7 @@ var (
 )
 
 type Service interface {
-	GenerateToken(tokenId string, isRefreshToken bool, duration time.Duration) (tokenStr string, err error)
+	GenerateToken(tokenId string, isAccess bool, duration time.Duration) (tokenStr string, err error)
 	ValidateToken(token string) (claim *Claims, err error)
 }
 

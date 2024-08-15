@@ -7,6 +7,7 @@ import (
 	"back-end/internal/constants"
 	"back-end/internal/http/datatransfers/requests"
 	"back-end/internal/http/datatransfers/responses"
+	"back-end/pkg/utils/local"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +16,7 @@ type userHandler struct {
 }
 
 type UserHandler interface {
-	GetUserById(c *gin.Context)
+	GetInfo(c *gin.Context)
 	SignUp(ctx *gin.Context)
 	SignIn(ctx *gin.Context)
 }
@@ -108,16 +109,9 @@ func (h *userHandler) SignIn(ctx *gin.Context) {
 	})
 }
 
-func (h *userHandler) GetUserById(ctx *gin.Context) {
-	var req requests.UserGetUserByIdRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		NewErrorResponse(ctx, http.StatusBadRequest, &responses.ErrorResponse{
-			ErrorCode: constants.ErrCodeParseRequestFailed,
-			Message:   constants.ErrInvalidRequest,
-		})
-		return
-	}
-	userInfo, errCode, err := h.service.GetInfoById(ctx, req.Id)
+func (h *userHandler) GetInfo(ctx *gin.Context) {
+	userId := local.New(ctx).GetUserId()
+	userInfo, errCode, err := h.service.GetInfoById(ctx, userId)
 	if err != nil {
 		NewErrorResponse(ctx, http.StatusInternalServerError, &responses.ErrorResponse{
 			ErrorCode: errCode,

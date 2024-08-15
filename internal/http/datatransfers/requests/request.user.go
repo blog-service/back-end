@@ -5,12 +5,7 @@ import (
 	"regexp"
 
 	"back-end/pkg/validator"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-type UserGetUserByIdRequest struct {
-	Id primitive.ObjectID `query:"id"`
-}
 
 type UserSignUpRequest struct {
 	Username  string `json:"username" validate:"required,alphanum"`

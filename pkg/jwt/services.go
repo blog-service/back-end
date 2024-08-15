@@ -26,7 +26,7 @@ func parsePublicKey(keyByte []byte) (*rsa.PublicKey, error) {
 	return key, nil
 }
 
-func (s *service) GenerateToken(tokenId string, isRefreshToken bool, duration time.Duration) (tokenStr string, err error) {
+func (s *service) GenerateToken(tokenId string, isAccess bool, duration time.Duration) (tokenStr string, err error) {
 	payload := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
@@ -34,7 +34,7 @@ func (s *service) GenerateToken(tokenId string, isRefreshToken bool, duration ti
 			ID:        tokenId,
 		},
 		Data: ClaimsData{
-			IsAccess: isRefreshToken,
+			IsAccess: isAccess,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, payload)

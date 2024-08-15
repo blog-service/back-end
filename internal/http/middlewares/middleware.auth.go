@@ -6,6 +6,7 @@ import (
 
 	"back-end/internal/config"
 	"back-end/internal/constants"
+	"back-end/internal/datasource/repositories"
 	"back-end/internal/http/datatransfers/responses"
 	handler "back-end/internal/http/handlers/v1"
 	"back-end/pkg/jwt"
@@ -50,12 +51,22 @@ func ValidateAccess() gin.HandlerFunc {
 			})
 			return
 		}
-		localService := local.New(c)
-		userId, err := primitive.ObjectIDFromHex(claims.Issuer)
+
+		optionQuery := repositories.NewOptions()
+		optionQuery.SetOnlyFields("user_id")
+		key, _, err := repositories.NewKey(c).FindOneByTokenId(claims.ID, optionQuery)
+		if err != nil {
+			handler.NewErrorResponse(c, http.StatusUnauthorized, &responses.ErrorResponse{
+				ErrorCode: constants.ErrCodeWrongToken,
+				Message:   constants.ErrWrongToken,
+			})
+			return
+		}
+
 		if err != nil {
 			return
 		}
-		localService.SetUserId(userId)
+		local.New(c).SetUserId(key.UserId)
 		c.Next()
 	}
 }

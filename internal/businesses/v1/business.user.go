@@ -8,6 +8,7 @@ import (
 	"back-end/internal/datasource/models"
 	"back-end/internal/datasource/repositories"
 	"back-end/internal/http/datatransfers/requests"
+	"back-end/internal/http/datatransfers/responses"
 	"back-end/pkg/hash"
 	"back-end/pkg/jwt"
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,7 @@ import (
 )
 
 type UserService interface {
-	GetInfoById(ctx *gin.Context, userId primitive.ObjectID) (user *models.User, errCode int, err error)
+	GetInfoById(ctx *gin.Context, userId primitive.ObjectID) (user *responses.UserGetInfoResponse, errCode int, err error)
 	Create(ctx *gin.Context, user *requests.UserSignUpRequest) (errCode int, err error)
 	CheckUser(ctx *gin.Context, userReq *requests.UserSignInRequest) (userId primitive.ObjectID, errCode int, err error)
 	RegisToken(ctx *gin.Context, userId primitive.ObjectID) (token string, errCode int, err error)
@@ -29,12 +30,27 @@ func NewUserService() UserService {
 	return &userService{}
 }
 
-func (s *userService) GetInfoById(ctx *gin.Context, userId primitive.ObjectID) (user *models.User, errCode int, err error) {
-	userInfo, errCode, err := repositories.NewUser(ctx).FindOneByID(userId)
+func (s *userService) GetInfoById(ctx *gin.Context, userId primitive.ObjectID) (*responses.UserGetInfoResponse, int, error) {
+	queryOptions := repositories.NewOptions()
+	queryOptions.SetOnlyFields("username", "email", "first_name", "last_name", "phone", "role", "created_at", "created_by", "updated_at", "updated_by")
+	userInfo, errCode, err := repositories.NewUser(ctx).FindOneByID(userId, queryOptions)
 	if err != nil {
 		return nil, errCode, err
 	}
-	return userInfo, constants.ErrCodeNoErr, nil
+	user := &responses.UserGetInfoResponse{
+		Username:  userInfo.Username,
+		Email:     userInfo.Email,
+		FirstName: userInfo.FirstName,
+		LastName:  userInfo.LastName,
+		Phone:     userInfo.Phone,
+		RoleId:    userInfo.RoleId,
+		RoleName:  constants.MapUserRoles[userInfo.RoleId],
+		CreatedAt: userInfo.CreatedAt,
+		CreatedBy: userInfo.CreatedBy,
+		UpdatedAt: userInfo.UpdatedAt,
+		UpdatedBy: userInfo.UpdatedBy,
+	}
+	return user, constants.ErrCodeNoErr, nil
 }
 
 func (s *userService) Create(ctx *gin.Context, user *requests.UserSignUpRequest) (errCode int, err error) {
@@ -99,11 +115,11 @@ func (s *userService) RegisToken(ctx *gin.Context, userId primitive.ObjectID) (t
 
 	jwtService := jwt.NewJwtService(cfg.PrivateKeyPath, cfg.PublicKeyPath)
 	tokenId := primitive.NewObjectID().Hex()
-	accessToken, err := jwtService.GenerateToken(tokenId, false, cfg.AccessTokenExpired)
+	accessToken, err := jwtService.GenerateToken(tokenId, true, cfg.AccessTokenExpired)
 	if err != nil {
 		return "", constants.ErrCodeUserGenerateTokenFailed, err
 	}
-	refreshToken, err := jwtService.GenerateToken(tokenId, true, cfg.RefreshTokenExpired)
+	refreshToken, err := jwtService.GenerateToken(tokenId, false, cfg.RefreshTokenExpired)
 	if err != nil {
 		return "", constants.ErrCodeUserGenerateTokenFailed, err
 	}

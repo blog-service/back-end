@@ -10,7 +10,7 @@ func NewSuccessResponse(c *gin.Context, statusCode int, response *responses.Succ
 		response = &responses.SuccessResponse{}
 	}
 	response.Success = true
-	c.JSON(statusCode, response)
+	c.AbortWithStatusJSON(statusCode, response)
 }
 
 func NewErrorResponse(c *gin.Context, statusCode int, response *responses.ErrorResponse) {
@@ -18,5 +18,5 @@ func NewErrorResponse(c *gin.Context, statusCode int, response *responses.ErrorR
 		response = &responses.ErrorResponse{}
 	}
 	response.Success = false
-	c.JSON(statusCode, response)
+	c.AbortWithStatusJSON(statusCode, response)
 }
